@@ -21,21 +21,25 @@ import bisect
 class IntvList(object):
     def __init__(self):
         self.list = []
-
+    
     def add(self, v):
         if not self.list:
             self.list = [v]
             return self
-
+        
         if not v in self:
-        --------------------------------
+            l = self.find_below(v)
+            u = self.find_above(v)
             
-
-
+            if l == u:
+                pass
+            else:
+                pass
+    
     def remove(self, v):
         if not self.list:
             return self
-
+    
     def __str__(self):
         rstr ="["
         for i in self.list:
@@ -43,29 +47,31 @@ class IntvList(object):
             rstr += ","
         rstr = rstr[:-1]
         rstr += ']'
-
+    
     def __iter__(self):
         return self.list.__iter__
-
+    
     def __contains__(self,v):
         #is v in any of the elements of this list
-
+        
         if len(self) < 5:
             testList = self.list
         else:
             lower = find_below(val)
             upper = find_above(val)
             testList = self.list[lower:upper]
-
+        
         for e in testList:
             if v in e return True
         return False
-
+    
     def __len__(self):
         return len(self.list)
-
+    
     def find_below(self, val):
         return bisect_right(self.list,val.lower())
-
+    
     def find_above(self, val):
         return bisect_right(self, val.upper())
+    
+
