@@ -67,6 +67,9 @@ class IntvList(object):
             print "l > u: bad"
             return
         
+        if l == u and l == len(self):
+            self.list.append(v)
+            return self
         if l == u:
             if self.list[l - 1].nextToQ(v):
                 self.list[l - 1] = (self.list[l - 1] + v)[0]
@@ -183,6 +186,8 @@ if __name__ == '__main__':
     p2  = Port(1025)
     p3  = Port(8080)
 
+    lall = [r1,r2,r3,r4,r5,r6,r7,p1,p2,p3]
+
     print "TEST1"
     i = IntvList()
     print i
@@ -215,3 +220,19 @@ if __name__ == '__main__':
     print i.add(r5)
     print i.add(r6)
     print i.add(r7)
+
+    print "test4"
+
+    import itertools
+    perm = itertools.permutations(lall, len(lall))
+
+    for lv in perm:
+        print
+        print perm
+        i = IntvList()
+        for v in lv:
+            print i
+            print v
+            print i.add(v)
+            print
+
