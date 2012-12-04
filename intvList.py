@@ -52,14 +52,60 @@ class IntvList(object):
             self.list = [v]
             return self
         
-        if not v in self:
-            l = self.find_below(v)
-            u = self.find_above(v)
+        if len(self) == 1:
+            self.list = self.list[0] + v
+            return self
             
-            if l == u:
-                pass
+        print "--s-->", self
+        print "--v-->", v
+        l = self.find_below(v)
+        print "--l-->", l
+        u = self.find_above(v)
+        print "--u-->", u
+
+        if l > u:
+            print "l > u: bad"
+            return
+        
+        if l == u:
+            if self.list[l - 1].nextToQ(v):
+                self.list[l - 1] = (self.list[l - 1] + v)[0]
+                return self
+            if self.list[u].nextToQ(v):
+                self.list[u] = (self.list[u] + v)[0]
+                return self
+            self.list.insert(l, v)
+            return self
+        else:
+            if l != 0:
+                before = self.list[:l - 1] 
             else:
-                pass
+                before = []
+            if u != len(self):
+                after = self.list[u + 1:]
+            else: 
+                after = []
+            
+            if l - u == 1:
+                middle = self.list[l] + v
+            else:
+                middle = self.list[l] + v
+                print "middle", middle
+                print "self", self
+                if u < len(self):
+                    middle = self.list[u] + middle[0]
+                else:
+                    middle = [middle[0]]
+
+            if len(before) and before[-1].nextToQ(middle[0]):
+                middle[0] = (middle[0] + before[-1])[0]
+                before = before[:-1]
+            if len(after) and after[0].nextToQ(middle[-1]):
+                middle[-1] = (after[0] + middle[-1])[0]
+                after = after[1:]
+            self.list = before + middle + after
+            return self
+                    
     
     def remove(self, v):
         if not self.list:
@@ -70,8 +116,9 @@ class IntvList(object):
         for i in self.list:
             rstr += str(i)
             rstr += ","
-        rstr = rstr[:-1]
+        if len(rstr) > 1: rstr = rstr[:-1]
         rstr += ']'
+        return rstr
     
     def __iter__(self):
         return self.list.__iter__
@@ -79,24 +126,92 @@ class IntvList(object):
     def __contains__(self,v):
         #is v in any of the elements of this list
         
-        if len(self) < 5:
+        if len(self) < 2:
             testList = self.list
         else:
-            lower = find_below(val)
-            upper = find_above(val)
+            lower = self.find_below(v)
+            upper = self.find_above(v)
             testList = self.list[lower:upper]
         
+        print "==v==>", v
         for e in testList:
-            if v in e return True
+            print "==e==>", e
+            if v in e: return True
         return False
     
     def __len__(self):
         return len(self.list)
     
-    def find_below(self, val):
-        return bisect_right(self.list,val.lower())
+    def find_above(self, other):
+        # leftmost element with upper() < other.lower
+        lo=0
+        hi = len(self)
+
+        while lo < hi:
+            mid = (lo+hi)//2
+            if self.list[mid].upper() < other.lower(): 
+                lo = mid+1
+            else: 
+                hi = mid
+        return lo
+
     
-    def find_above(self, val):
-        return bisect_right(self, val.upper())
+    def find_below(self, other):
+        # rightmost element with lower() > other.upper
+        lo = 0
+        hi = len(self)
+        while lo < hi:
+            mid = (lo+hi)//2
+            if other.upper() < self.list[mid].lower(): 
+                hi = mid
+            else: 
+                lo = mid+1
+        return lo
     
 
+if __name__ == '__main__':
+    from port import *
+    ALL = PortRange(MINP, MAXP)
+    r1  = PortRange(1,1024)
+    r2  = PortRange(500,1500)
+    r3  = PortRange(1025, 2000)
+    r4  = PortRange(2000,3000)
+    r5  = PortRange(4000,5000)
+    r6  = PortRange(6000,7000)
+    r7  = PortRange(8000,9000)
+    p1  = Port(80)
+    p2  = Port(1025)
+    p3  = Port(8080)
+
+    print "TEST1"
+    i = IntvList()
+    print i
+    print i.add(r1)
+    print i.add(r3)
+    print i.add(r2)
+    print i.add(ALL)
+    print
+
+    print "TEST2"
+    i = IntvList()
+    print i
+    print i.add(r1)
+    print i.add(r4)
+    print i.add(p2)
+    print i.add(p3)
+    print i.add(r4)
+    print i.add(r5)
+    print i.add(r6)
+    print i.add(ALL)
+
+    print "TEST3"
+    i = IntvList()
+    print i
+    print i.add(r1)
+    print i.add(r4)
+    print i.add(p2)
+    print i.add(p3)
+    print i.add(r4)
+    print i.add(r5)
+    print i.add(r6)
+    print i.add(r7)
