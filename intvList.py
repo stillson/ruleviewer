@@ -235,7 +235,8 @@ if __name__ == '__main__':
     r4 = pr(31, 35)
     p1 = p(11)
     p2 = p(30)
-    lall = [r1,r2,r3,r4,p1,p2]
+    p3 = p(29)
+    lall = [r1,r2,r3,r4,p1,p2,p3]
     perm = itertools.permutations(lall, len(lall))
     
     for lv in perm:
