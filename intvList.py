@@ -56,13 +56,13 @@ class IntvList(object):
             self.list = self.list[0] + v
             return self
             
-        print "--s-->", self
-        print "--v-->", v
+        #print "--s-->", self
+        #print "--v-->", v
         l = self.find_below(v)
-        print "--l-->", l
+        #print "--l-->", l
         u = self.find_above(v)
-        print "--u-->", u
-
+        #print "--u-->", u
+        
         if l > u:
             print "l > u: bad"
             return
@@ -93,13 +93,13 @@ class IntvList(object):
                 middle = self.list[l] + v
             else:
                 middle = self.list[l] + v
-                print "middle", middle
-                print "self", self
+                #print "middle", middle
+                #print "self", self
                 if u < len(self):
                     middle = self.list[u] + middle[0]
                 else:
                     middle = [middle[0]]
-
+            
             if len(before) and before[-1].nextToQ(middle[0]):
                 middle[0] = (middle[0] + before[-1])[0]
                 before = before[:-1]
@@ -108,7 +108,6 @@ class IntvList(object):
                 after = after[1:]
             self.list = before + middle + after
             return self
-                    
     
     def remove(self, v):
         if not self.list:
@@ -136,9 +135,9 @@ class IntvList(object):
             upper = self.find_above(v)
             testList = self.list[lower:upper]
         
-        print "==v==>", v
+        #print "==v==>", v
         for e in testList:
-            print "==e==>", e
+            #print "==e==>", e
             if v in e: return True
         return False
     
@@ -188,51 +187,62 @@ if __name__ == '__main__':
 
     lall = [r1,r2,r3,r4,r5,r6,r7,p1,p2,p3]
 
-    print "TEST1"
-    i = IntvList()
-    print i
-    print i.add(r1)
-    print i.add(r3)
-    print i.add(r2)
-    print i.add(ALL)
-    print
+    if False:
+        print "TEST1"
+        i = IntvList()
+        print i
+        print i.add(r1)
+        print i.add(r3)
+        print i.add(r2)
+        print i.add(ALL)
+        print
 
-    print "TEST2"
-    i = IntvList()
-    print i
-    print i.add(r1)
-    print i.add(r4)
-    print i.add(p2)
-    print i.add(p3)
-    print i.add(r4)
-    print i.add(r5)
-    print i.add(r6)
-    print i.add(ALL)
+    if 0:
+        print "TEST2"
+        i = IntvList()
+        print i
+        print i.add(r1)
+        print i.add(r4)
+        print i.add(p2)
+        print i.add(p3)
+        print i.add(r4)
+        print i.add(r5)
+        print i.add(r6)
+        print i.add(ALL)
 
-    print "TEST3"
-    i = IntvList()
-    print i
-    print i.add(r1)
-    print i.add(r4)
-    print i.add(p2)
-    print i.add(p3)
-    print i.add(r4)
-    print i.add(r5)
-    print i.add(r6)
-    print i.add(r7)
+    if 0:
+        print "TEST3"
+        i = IntvList()
+        print i
+        print i.add(r1)
+        print i.add(r4)
+        print i.add(p2)
+        print i.add(p3)
+        print i.add(r4)
+        print i.add(r5)
+        print i.add(r6)
+        print i.add(r7)
 
     print "test4"
 
     import itertools
+    pr = PortRange
+    p  = Port
+    
+    r1 = pr(1,20)
+    r2 = pr(10,30)
+    r3 = pr(21,40)
+    r4 = pr(31, 35)
+    p1 = p(11)
+    p2 = p(30)
+    lall = [r1,r2,r3,r4,p1,p2]
     perm = itertools.permutations(lall, len(lall))
-
+    
     for lv in perm:
         print
-        print perm
+        print lv
         i = IntvList()
         for v in lv:
-            print i
-            print v
-            print i.add(v)
+            print i , "plus ", v,
+            print "---->",i.add(v)
             print
-
