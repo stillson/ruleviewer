@@ -166,12 +166,15 @@ class Port(PortBase):
     def __add__(self, other):
         # double dispatch
         if isP(other):
-            if other > self:
-                return [Port(self.val), Port(other.val)]
-            if other < self:
-                return [Port(other.val), Port(self.val)]
+            s = self.val
+            o = other.val
+            n = min(s,o)
+            x = max(s,o)
+            if other.nextToQ(self):
+                return [PortRange(n,x)]
             if other == self:
                 return [Port(self.val)]
+            return [Port(n), Port(x)]
         if isPR(other):
             return other + self
         return Port(self.val + other)
