@@ -41,7 +41,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # __cmp__       for sorting
 # nextToQ()     test adjacency (-1 == right below, 1 right above, 0 not adj)
 
+import exceptions
 import bisect
+
+class UpperLowerCross(exceptions.Exception):
+    pass
 
 class IntvList(object):
     def __init__(self):
@@ -56,16 +60,15 @@ class IntvList(object):
             self.list = self.list[0] + v
             return self
             
-        #print "--s-->", self
-        #print "--v-->", v
         l = self.find_below(v)
-        #print "--l-->", l
         u = self.find_above(v)
-        #print "--u-->", u
         
         if l > u:
-            print "l > u: bad"
-            return
+            if len(v) == 1:
+                #we are trying to put a port on top of an identical port
+                return self
+            else:
+                raise UpperLowerCross("lower greather than upper")
         
         if l == u and l == len(self):
             self.list.append(v)
@@ -229,21 +232,68 @@ if __name__ == '__main__':
     pr = PortRange
     p  = Port
     
-    r1 = pr(1,20)
-    r2 = pr(10,30)
-    r3 = pr(21,40)
-    r4 = pr(31, 35)
-    p1 = p(11)
-    p2 = p(30)
-    p3 = p(29)
-    lall = [r1,r2,r3,r4,p1,p2,p3]
-    perm = itertools.permutations(lall, len(lall))
-    
-    for lv in perm:
-        print
-        print lv
+    if 0:
+        r1 = pr(1,20)
+        r2 = pr(10,30)
+        r3 = pr(21,40)
+        r4 = pr(31, 35)
+        p1 = p(11)
+        p2 = p(30)
+        p3 = p(29)
+        lall = [r1,r2,r3,r4,p1,p2,p3]
+        perm = itertools.permutations(lall, len(lall))
+        
+        for lv in perm:
+            print
+            print lv
+            i = IntvList()
+            for v in lv:
+                print i , "plus ", v,
+                print "---->",i.add(v)
+                print
+            
+    import random
+    ri = random.randint
+
+    if 1:
+        minp = MINP
+        maxp = 17 
+        for i in range(100):
+            def randos():
+                start = ri(minp, maxp - 2)
+                end   = ri(start + 1, maxp)
+                return (start, end)
+            start,end = randos()
+            r1 = pr(start,end)
+            start,end = randos()
+            r2 = pr(start,end)
+            start,end = randos()
+            r3 = pr(start,end)
+            start,end = randos()
+            r4 = pr(start,end)
+            p1 = p(ri(minp,maxp))
+            p2 = p(ri(minp,maxp))
+            p3 = p(ri(minp,maxp))
+            p4 = p(ri(minp,maxp))
+
+
+            lall = [r1,r2,r3,r4,p1,p2,p3,p4]
+            perm = itertools.permutations(lall, len(lall))
+
+            for lv in perm:
+                print
+                print lv
+                i = IntvList()
+                for v in lv:
+                    print i , "plus ", v,
+                    print "---->",i.add(v)
+
+    if 0:
         i = IntvList()
+        p1 = p(10)
+        p2 = p(2)
+        p3 = p(8)
+        lv = [p1,p2,p2]
         for v in lv:
             print i , "plus ", v,
             print "---->",i.add(v)
-            print
