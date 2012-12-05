@@ -255,9 +255,9 @@ if __name__ == '__main__':
     import random
     ri = random.randint
 
-    if 1:
+    if 0:
         minp = MINP
-        maxp = 17 
+        maxp = 4 
         for i in range(100):
             def randos():
                 start = ri(minp, maxp - 2)
@@ -297,3 +297,34 @@ if __name__ == '__main__':
         for v in lv:
             print i , "plus ", v,
             print "---->",i.add(v)
+
+    def testadd(a,b):
+        print a , "plus ", b,
+        print "---->",a.add(b)
+
+    if 1:
+        #actual targetted tests
+        r1 =  pr(100,  200)
+        r2 =  pr(300,  400)
+        r3 =  pr(500,  600)
+        r4 =  pr(700,  800)
+        r5 =  pr(900,  1000)
+        r6 =  pr(1100, 1200)
+
+        r7 =  pr(150,  250)
+        r8 =  pr(500,  600)
+        r9 =  pr(700,  1000)
+        r10 = pr(1000, 1100)
+
+        
+        i = IntvList()
+        testadd(i, r1)
+        testadd(i, r2)
+        testadd(i, r3)
+        testadd(i, r4)
+        testadd(i, r5)
+        testadd(i, r6)
+        testadd(i, r7)
+        testadd(i, r8)
+        testadd(i, r9)
+        testadd(i, r10)
