@@ -256,7 +256,7 @@ class PortRange(PortBase):
             return (other >= self.start) and (other <= self.end)
         
         if isPR(other):
-            return (self.start in other) or (self.end in other)
+            return (other.start in self) or (other.end in self)
         
         raise InvalidInput("object must be Port or PortRange")
     

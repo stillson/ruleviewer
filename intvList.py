@@ -43,15 +43,105 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import exceptions
 import bisect
+import collections
+
+#this needs to be in a common file
+EXACT_COVER    = 0
+UPPER_COVER    = 1
+LOWER_COVER    = 2
+INNER_COVER    = 3
+OUTER_COVER    = 4
+BELOW_NO_COVER = -1
+ABOVE_NO_COVER = -2
 
 class UpperLowerCross(exceptions.Exception):
     pass
 
-class IntvList(object):
+class IntvList(collections.MutableSequence):
+    "init"
     def __init__(self):
         self.list = []
     
-    def add(self, v):
+    "ABC related functions"
+    def __setitem__(self, index, value):
+        self.list[index] = value
+
+    def __delitem__(self, index):
+        self.list.__delitem__(index)
+
+    def insert(self, index, val):
+        self.list.insert(index,val)
+
+    def insert_(self, index, val):
+        self.list.insert(index,val)
+        return self
+
+    def __getitem__(self, index):
+        return self.list[index] 
+
+    def __str__(self):
+        rstr ="["
+        for i in self.list:
+            rstr += str(i)
+            rstr += ","
+        if len(rstr) > 1: rstr = rstr[:-1]
+        rstr += ']'
+        return rstr
+    
+    def __iter__(self):
+        return self.list.__iter__
+    
+    def __contains__(self,v):
+        #is v in any of the elements of this list
+        
+        if len(self) < 1:
+            testList = self.list
+        else:
+            lower = self.find_below(v)
+            upper = self.find_above(v)
+            testList = self[lower:upper]
+        
+        #print "==v==>", v
+        for e in testList:
+            #print "==e==>", e
+            if v in e: 
+                return True
+
+        print "False"
+        return False
+    
+    def __len__(self):
+        return len(self.list)
+
+    "useful internal funcs"
+    def find_above(self, other):
+        # leftmost element with self[i].upper() <= other.lower
+        lo=0
+        hi = len(self)
+
+        while lo < hi:
+            mid = (lo+hi)//2
+            if self[mid].upper() < other.lower(): 
+                lo = mid+1
+            else: 
+                hi = mid
+        return lo
+
+    
+    def find_below(self, other):
+        # rightmost element with self[i].lower() >= other.upper
+        lo = 0
+        hi = len(self)
+        while lo < hi:
+            mid = (lo+hi)//2
+            if other.upper() < self[mid].lower(): 
+                hi = mid
+            else: 
+                lo = mid+1
+        return lo
+    
+    "MEAT"
+    def add_(self, v):
         if not self.list:
             self.list = [v]
             return self
@@ -112,219 +202,51 @@ class IntvList(object):
             self.list = before + middle + after
             return self
     
-    def remove(self, v):
-        if not self.list:
+    def remove_(self, v):
+        #print 'pre'
+        if not self.list or not v in self:
+            return self
+
+        if len(self) == 1:
+            #print 'a'
+            self.list = self.list[0] - v
             return self
     
-    def __str__(self):
-        rstr ="["
-        for i in self.list:
-            rstr += str(i)
-            rstr += ","
-        if len(rstr) > 1: rstr = rstr[:-1]
-        rstr += ']'
-        return rstr
-    
-    def __iter__(self):
-        return self.list.__iter__
-    
-    def __contains__(self,v):
-        #is v in any of the elements of this list
-        
-        if len(self) < 2:
-            testList = self.list
+        l = self.find_below(v)
+        u = self.find_above(v)
+        #print "l:",l
+        #print "u:",u
+        #print "len:", len(self)
+
+        if u < l:
+            #print 'c'
+            if len(v) == 1:
+                # port to port
+                self.remove(v)
+                return self
+            else:
+                raise UpperLowerCross("lower greater than upper")
+
+        if u == len(self):
+            u = u - 1
+
+        if l == u:
+            #print 'd'
+            self[l:u+1] = self[l] - v
+            return self
+            
+        if u - l == 1:
+            #print 'f'
+            self[u:u+1] = self[u] - v
+            self[l:l+1] = self[l] - v
         else:
-            lower = self.find_below(v)
-            upper = self.find_above(v)
-            testList = self.list[lower:upper]
-        
-        #print "==v==>", v
-        for e in testList:
-            #print "==e==>", e
-            if v in e: return True
-        return False
-    
-    def __len__(self):
-        return len(self.list)
-    
-    def find_above(self, other):
-        # leftmost element with upper() < other.lower
-        lo=0
-        hi = len(self)
+            #print 'g'
+            self[u:u+1] = self[u] - v
+            del self[l+1,u]
+            self[l:l+1] = self[l] - v
 
-        while lo < hi:
-            mid = (lo+hi)//2
-            if self.list[mid].upper() < other.lower(): 
-                lo = mid+1
-            else: 
-                hi = mid
-        return lo
-
-    
-    def find_below(self, other):
-        # rightmost element with lower() > other.upper
-        lo = 0
-        hi = len(self)
-        while lo < hi:
-            mid = (lo+hi)//2
-            if other.upper() < self.list[mid].lower(): 
-                hi = mid
-            else: 
-                lo = mid+1
-        return lo
-    
+        return self
 
 if __name__ == '__main__':
-    from port import *
-    ALL = PortRange(MINP, MAXP)
-    r1  = PortRange(1,1024)
-    r2  = PortRange(500,1500)
-    r3  = PortRange(1025, 2000)
-    r4  = PortRange(2000,3000)
-    r5  = PortRange(4000,5000)
-    r6  = PortRange(6000,7000)
-    r7  = PortRange(8000,9000)
-    p1  = Port(80)
-    p2  = Port(1025)
-    p3  = Port(8080)
-
-    lall = [r1,r2,r3,r4,r5,r6,r7,p1,p2,p3]
-
-    if False:
-        print "TEST1"
-        i = IntvList()
-        print i
-        print i.add(r1)
-        print i.add(r3)
-        print i.add(r2)
-        print i.add(ALL)
-        print
-
-    if 0:
-        print "TEST2"
-        i = IntvList()
-        print i
-        print i.add(r1)
-        print i.add(r4)
-        print i.add(p2)
-        print i.add(p3)
-        print i.add(r4)
-        print i.add(r5)
-        print i.add(r6)
-        print i.add(ALL)
-
-    if 0:
-        print "TEST3"
-        i = IntvList()
-        print i
-        print i.add(r1)
-        print i.add(r4)
-        print i.add(p2)
-        print i.add(p3)
-        print i.add(r4)
-        print i.add(r5)
-        print i.add(r6)
-        print i.add(r7)
-
-    print "test4"
-
-    import itertools
-    pr = PortRange
-    p  = Port
-    
-    if 0:
-        r1 = pr(1,20)
-        r2 = pr(10,30)
-        r3 = pr(21,40)
-        r4 = pr(31, 35)
-        p1 = p(11)
-        p2 = p(30)
-        p3 = p(29)
-        lall = [r1,r2,r3,r4,p1,p2,p3]
-        perm = itertools.permutations(lall, len(lall))
-        
-        for lv in perm:
-            print
-            print lv
-            i = IntvList()
-            for v in lv:
-                print i , "plus ", v,
-                print "---->",i.add(v)
-                print
-            
-    import random
-    ri = random.randint
-
-    if 0:
-        minp = MINP
-        maxp = 4 
-        for i in range(100):
-            def randos():
-                start = ri(minp, maxp - 2)
-                end   = ri(start + 1, maxp)
-                return (start, end)
-            start,end = randos()
-            r1 = pr(start,end)
-            start,end = randos()
-            r2 = pr(start,end)
-            start,end = randos()
-            r3 = pr(start,end)
-            start,end = randos()
-            r4 = pr(start,end)
-            p1 = p(ri(minp,maxp))
-            p2 = p(ri(minp,maxp))
-            p3 = p(ri(minp,maxp))
-            p4 = p(ri(minp,maxp))
-
-
-            lall = [r1,r2,r3,r4,p1,p2,p3,p4]
-            perm = itertools.permutations(lall, len(lall))
-
-            for lv in perm:
-                print
-                print lv
-                i = IntvList()
-                for v in lv:
-                    print i , "plus ", v,
-                    print "---->",i.add(v)
-
-    if 0:
-        i = IntvList()
-        p1 = p(10)
-        p2 = p(2)
-        p3 = p(8)
-        lv = [p1,p2,p2]
-        for v in lv:
-            print i , "plus ", v,
-            print "---->",i.add(v)
-
-    def testadd(a,b):
-        print a , "plus ", b,
-        print "---->",a.add(b)
-
-    if 1:
-        #actual targetted tests
-        r1 =  pr(100,  200)
-        r2 =  pr(300,  400)
-        r3 =  pr(500,  600)
-        r4 =  pr(700,  800)
-        r5 =  pr(900,  1000)
-        r6 =  pr(1100, 1200)
-
-        r7 =  pr(150,  250)
-        r8 =  pr(500,  600)
-        r9 =  pr(700,  1000)
-        r10 = pr(1000, 1100)
-
-        
-        i = IntvList()
-        testadd(i, r1)
-        testadd(i, r2)
-        testadd(i, r3)
-        testadd(i, r4)
-        testadd(i, r5)
-        testadd(i, r6)
-        testadd(i, r7)
-        testadd(i, r8)
-        testadd(i, r9)
-        testadd(i, r10)
+    i = IntvList()
+    print dir(i)
