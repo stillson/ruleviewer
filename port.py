@@ -25,7 +25,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import numbers
 import exceptions
 from pprint import pprint as pp
 from copy import deepcopy
@@ -48,10 +47,10 @@ MAXP = 65535
 MINP = 1
 
 def isP(p):
-    return (hasattr(p, 'singularQ') and p.singularQ)
+    len(p) == 1
 
 def isPR(p):
-    return (hasattr(p, 'singularQ') and not p.singularQ)
+    len(p) > 1
 
 EXACT_COVER    = 0
 UPPER_COVER    = 1
@@ -119,7 +118,7 @@ class PortBase(object):
         return None
     
     def __contains__(self, other):
-        #for in
+        #for in (is the intersection of two objects not null)
         return False
     
     def __cmp__(self, other):
@@ -138,8 +137,6 @@ class Port(PortBase):
     def __init__(self, val):
         if val < MINP or val > MAXP:
             raise InvalidPort("port must be between 1 and 65535")
-        
-        self.singularQ = True
         
         if isP(val):
             self._val = val.val
@@ -238,8 +235,6 @@ class PortRange(PortBase):
         self._start = Port(start)
         self._end   = Port(end)
         
-        self.singularQ = False
-    
     @property
     def start(self):
         return self._start
