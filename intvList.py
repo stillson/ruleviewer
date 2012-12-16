@@ -45,15 +45,6 @@ import exceptions
 import bisect
 import collections
 
-#this needs to be in a common file
-EXACT_COVER    = 0
-UPPER_COVER    = 1
-LOWER_COVER    = 2
-INNER_COVER    = 3
-OUTER_COVER    = 4
-BELOW_NO_COVER = -1
-ABOVE_NO_COVER = -2
-
 class UpperLowerCross(exceptions.Exception):
     pass
 
@@ -92,7 +83,7 @@ class IntvList(collections.MutableSequence):
         return self.list.__iter__
     
     def __contains__(self,v):
-        #is v in any of the elements of this list
+        #is the intersection of self an v not the empty set
         
         if len(self) < 1:
             testList = self.list
@@ -115,7 +106,7 @@ class IntvList(collections.MutableSequence):
 
     "useful internal funcs"
     def find_above(self, other):
-        # leftmost element with self[i].upper() <= other.lower
+        # leftmost (first) element with self[i].upper() <= other.lower
         lo=0
         hi = len(self)
 
@@ -129,7 +120,7 @@ class IntvList(collections.MutableSequence):
 
     
     def find_below(self, other):
-        # rightmost element with self[i].lower() >= other.upper
+        # rightmost (last) element with self[i].lower() >= other.upper
         lo = 0
         hi = len(self)
         while lo < hi:

@@ -28,120 +28,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import exceptions
 from pprint import pprint as pp
 from copy import deepcopy
-
-
-class InvalidPort(exceptions.Exception): 
-    pass
-
-class InvertedRange(exceptions.Exception): 
-    pass
-
-class InvalidInput(exceptions.Exception): 
-    pass
-
-class VirtualClassOnly(exceptions.Exception): 
-    pass
+from intvBase import *
 
 
 MAXP = 65535
 MINP = 1
 
-def isP(p):
-    len(p) == 1
-
-def isPR(p):
-    len(p) > 1
-
-EXACT_COVER    = 0
-UPPER_COVER    = 1
-LOWER_COVER    = 2
-INNER_COVER    = 3
-OUTER_COVER    = 4
-BELOW_NO_COVER = -1
-ABOVE_NO_COVER = -2
-
-class PortBase(object):
-    def __init__(self):
-        raise VirtualClassOnly('This class should not be instatiated')
-    
-    def rangeCmp(self, other):
-        if self.exactCoverQ(other): return EXACT_COVER
-        if self.upperCoverQ(other): return UPPER_COVER
-        if self.lowerCoverQ(other): return LOWER_COVER
-        if self.innerCoverQ(other): return INNER_COVER
-        if self.outerCoverQ(other): return OUTER_COVER
-        if self < other:            return BELOW_NO_COVER
-        if self > other:            return ABOVE_NO_COVER
-    
-    def exactCoverQ(self, other):
-        # exact match
-        return False
-    
-    def upperCoverQ(self, other):
-        # overlaps above        (3,7) is upperCovered by (6,8)
-        return False
-    
-    def lowerCoverQ(self, other):
-        # overlaps below        (3,7) is lowerCovered by (2,4)
-        return False
-    
-    def innerCoverQ(self, other):
-        # partly covers inside  (3,7) is innerCovered by (4,6) or (3,5)
-        return False
-    
-    def outerCoverQ(self, other):
-        #partly covers outside (3,7) is outerCovered by (1,9) or (2,7)
-        return False
-    
-    def lower(self):
-        #return lower bound as a singular element
-        return None
-    
-    def upper(self):
-        #return upper bound as a singular element
-        return None
-    
-    def __len__(self):
-        #number of points covered 1 or 2+ really
-        return 0
-    
-    def split(self, port):
-        #break a non singular element into two elements (if len is 2+)
-        return None
-    
-    def __add__(self, other):
-        #add a point or range to a non singular element
-        return None
-    
-    def __sub__(self, other):
-        #remove a point or range from a non singular element
-        return None
-    
-    def __contains__(self, other):
-        #for in (is the intersection of two objects not null)
-        return False
-    
-    def __cmp__(self, other):
-        #for sorting
-        return -1
-    
-    def nextToQ(self, other):
-        #test adjacency (-1 == right below, 1 right above, 0 not adj)
-        return 0
-    
-    def copy(self):
-        return deepcopy(self)
-    
-
-class Port(PortBase):
+class Port(IntvBase):
     def __init__(self, val):
         if val < MINP or val > MAXP:
-            raise InvalidPort("port must be between 1 and 65535")
+            raise InvalidRange("port must be between 1 and 65535")
         
-        if isP(val):
+        if isSQ(val):
             self._val = val.val
         else:
             self._val = val
+    
+    @property
+    def lower(self):
+        return self._val
+    
+    @property
+    def upper(self):
+        return self._val
     
     @property
     def val(self):
@@ -154,15 +63,15 @@ class Port(PortBase):
         return self.__str__()
     
     def exactCoverQ(self, other):
-        if isP(other):
+        if isSQ(other):
             return self == other
-        if isPR(other):
+        if isRQ(other):
             return False
         raise InvalidInput("must be port or range")
     
     def __add__(self, other):
         # double dispatch
-        if isP(other):
+        if isSQ(other):
             s = self.val
             o = other.val
             n = min(s,o)
@@ -172,17 +81,17 @@ class Port(PortBase):
             if other == self:
                 return [Port(self.val)]
             return [Port(n), Port(x)]
-        if isPR(other):
+        if isRQ(other):
             return other + self
         return Port(self.val + other)
     
     def __sub__(self, other):
-        if isP(other):
+        if isSQ(other):
             if self == other:
                 return []
             else:
                 return [Port(self.val)]
-        if isPR(other):
+        if isRQ(other):
             if self in other:
                 return []
             else:
@@ -191,9 +100,9 @@ class Port(PortBase):
         return Port(self.val - other)
     
     def __cmp__(self,other):
-        if isP(other):
+        if isSQ(other):
             return self.val.__cmp__(other.val)
-        elif isPR(other):
+        elif isRQ(other):
             return self.val.__cmp__(other.lower())
         else:
             return self.val.__cmp__(other)
@@ -202,22 +111,16 @@ class Port(PortBase):
         return [Port(self.val)]
     
     def __contains__(self, other):
-        if isP(other):
+        if isSQ(other):
             return self == other
-        if isPR(other):
+        if isRQ(other):
             return self in other
     
     def nextToQ(self, other):
-        if isP(other):
+        if isSQ(other):
             return self.val == other.val -1 or self.val == other.val + 1
-        if isPR(other):
+        if isRQ(other):
             return self.val + 1 == other.lower().val or self.val - 1 == other.upper().val
-    
-    def lower(self):
-        return self.copy()
-    
-    def upper(self):
-        return self.copy()
     
     def minQ(self):
         return self.val == MINP
@@ -229,7 +132,7 @@ class Port(PortBase):
         return 1
     
 
-class PortRange(PortBase):
+class PortRange(IntvBase):
     def __init__(self, start, end):
         if start >= end: raise InvertedRange("start must be less than end")
         self._start = Port(start)
@@ -247,10 +150,10 @@ class PortRange(PortBase):
         return self.end.val - self.start.val + 1
     
     def __contains__(self, other):
-        if isP(other):
+        if isSQ(other):
             return (other >= self.start) and (other <= self.end)
         
-        if isPR(other):
+        if isRQ(other):
             if other.start < self.start and other.end > self.end:
                 return True
             return (other.start in self) or (other.end in self)
@@ -264,7 +167,7 @@ class PortRange(PortBase):
         return self.__str__()
     
     def rangeCmp(self, other):
-        if isP(other):
+        if isSQ(other):
             v = other.__cmp__(self)
             if v == -1:
                 return ABOVE_NO_COVER
@@ -272,7 +175,7 @@ class PortRange(PortBase):
                 return OUTER_COVER
             if v == 1:
                 return BELOW_NO_COVER
-        if isPR(other):
+        if isRQ(other):
             if self.end < other.start:
                 return BELOW_NO_COVER
             if self.start > other.end:
@@ -338,7 +241,7 @@ class PortRange(PortBase):
     
     def __sub__(self, p):
         #remove a port or range
-        if isP(p): 
+        if isSQ(p): 
             if not p in self:
                 return [deepcopy(self)]
             if p == self.start:
@@ -357,7 +260,7 @@ class PortRange(PortBase):
             split_range[0] = (split_range[0] - p)[0]
             return split_range
         
-        if isPR(p):
+        if isRQ(p):
             if self.exactCoverQ(p) or self.outerCoverQ(p):
                 return []
             if self.lowerCoverQ(p):
@@ -377,7 +280,7 @@ class PortRange(PortBase):
     
     def __add__(self,p):
         # add a port or range
-        if isP(p):
+        if isSQ(p):
             if p in self:
                 return [deepcopy(self)]
             if p < self.start:
@@ -389,7 +292,7 @@ class PortRange(PortBase):
                 return [PortRange(self.start, p)]
             else:
                 return [deepcopy(self), p + 0]
-        if isPR(p):
+        if isRQ(p):
             if self.exactCoverQ(p) or self.innerCoverQ(p):
                 return [self.copy()]
             if self.outerCoverQ(p):
@@ -417,9 +320,9 @@ class PortRange(PortBase):
         return self.end
     
     def nextToQ(self,other):
-        if isP(other):
+        if isSQ(other):
             return other.nextToQ(self)
-        if isPR(other):
+        if isRQ(other):
             return self.end.val + 1 == other.start.val or other.end.val + 1 == self.start.val
     
 
