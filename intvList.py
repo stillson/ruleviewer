@@ -85,7 +85,13 @@ class IntvList(collections.MutableSequence):
     def __contains__(self,v):
         #is the intersection of self an v not the empty set
         
+        if len(self) = 0:
+            return False
+        
         if len(self) < 1:
+            # otimized because it's not worth it to find lower/upper
+            # for a short list
+            # set to 1 for debugging
             testList = self.list
         else:
             lower = self.find_below(v)
@@ -133,19 +139,22 @@ class IntvList(collections.MutableSequence):
     
     "MEAT"
     def add_(self, v):
+        
+        # empty list
         if not self.list:
             self.list = [v]
             return self
         
+        # 1 elment
         if len(self) == 1:
             self.list = self.list[0] + v
             return self
-            
+        
         l = self.find_below(v)
         u = self.find_above(v)
         
         if l > u:
-            if len(v) == 1:
+            if v.isSingularQ:
                 #we are trying to put a port on top of an identical port
                 return self
             else:
@@ -154,6 +163,7 @@ class IntvList(collections.MutableSequence):
         if l == u and l == len(self):
             self.list.append(v)
             return self
+        
         if l == u:
             if self.list[l - 1].nextToQ(v):
                 self.list[l - 1] = (self.list[l - 1] + v)[0]

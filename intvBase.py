@@ -139,7 +139,7 @@ class IntvBase(object):
     def coalesce(self, other):
         "if self and other should coalesce, return coalesced as non list, otherwise return None"
         rv = self + other
-        if len(rv) = 1:
+        if len(rv) == 1:
             return rv[0]
         return None
     
