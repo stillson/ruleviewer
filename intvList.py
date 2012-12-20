@@ -44,6 +44,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import exceptions
 import bisect
 import collections
+from ilDebug import dbP,dbPn
+import itertools
 
 class UpperLowerCross(exceptions.Exception):
     pass
@@ -80,12 +82,12 @@ class IntvList(collections.MutableSequence):
         return rstr
     
     def __iter__(self):
-        return self.list.__iter__
+        return self.list.__iter__()
     
     def __contains__(self,v):
         #is the intersection of self an v not the empty set
         
-        if len(self) = 0:
+        if len(self) == 0:
             return False
         
         if len(self) < 1:
@@ -104,11 +106,19 @@ class IntvList(collections.MutableSequence):
             if v in e: 
                 return True
 
-        print "False"
+        #print "False"
         return False
     
     def __len__(self):
         return len(self.list)
+    
+    def __cmp__(self, other):
+        pairlist = itertools.izip(self,other)
+        for p in pairlist:
+            rv =  p[0].__cmp__(p[1])
+            if rv != 0:
+                return rv
+        return 0
 
     "useful internal funcs"
     def find_above(self, other):
@@ -118,9 +128,9 @@ class IntvList(collections.MutableSequence):
 
         while lo < hi:
             mid = (lo+hi)//2
-            if self[mid].upper() < other.lower(): 
+            if self[mid].upper() < other.lower():
                 lo = mid+1
-            else: 
+            else:
                 hi = mid
         return lo
 
@@ -204,12 +214,15 @@ class IntvList(collections.MutableSequence):
             return self
     
     def remove_(self, v):
-        #print 'pre'
+        pf = False
+        dbP(pf, '')
+        dbP(pf, 'pre')
         if not self.list or not v in self:
+            dbP(pf, 'x',str(self))
             return self
 
         if len(self) == 1:
-            #print 'a'
+            dbP(pf, 'a')
             self.list = self.list[0] - v
             return self
     
@@ -220,7 +233,7 @@ class IntvList(collections.MutableSequence):
         #print "len:", len(self)
 
         if u < l:
-            #print 'c'
+            dbP(pf, 'c')
             if len(v) == 1:
                 # port to port
                 self.remove(v)
@@ -232,16 +245,16 @@ class IntvList(collections.MutableSequence):
             u = u - 1
 
         if l == u:
-            #print 'd'
+            dbP(pf, 'd')
             self[l:u+1] = self[l] - v
             return self
-            
+
         if u - l == 1:
-            #print 'f'
+            dbP(pf, 'f')
             self[u:u+1] = self[u] - v
             self[l:l+1] = self[l] - v
         else:
-            #print 'g'
+            dbP(pf, 'g')
             self[u:u+1] = self[u] - v
             del self[l+1,u]
             self[l:l+1] = self[l] - v

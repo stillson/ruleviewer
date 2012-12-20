@@ -111,7 +111,7 @@ class PRule(object):
     def __init__(self, a_line):
         self.raw_line = a_line
         self.parsedRule = parser.parse_a_rule(a_line)
-        self.processPR() 
+        self.processPR()
 
     def DUMP(self):
         print "-" * 60
@@ -123,7 +123,7 @@ class PRule(object):
     def processPR(self):
         for k,v in self.parsedRule.iteritems():
             fName = "do_" + k
-            self.__getattribute__(fName)(v) 
+            self.__getattribute__(fName)(v)
         self.findMatchOut()
         self.findMissOut()
 
@@ -246,7 +246,7 @@ into a variety of graph viewing software (graphviz works well)
 
 def main(args):
     if len(args) < 2:
-        print "please supply file name" 
+        print "please supply file name"
         return
         
 
@@ -283,7 +283,7 @@ def main(args):
     #print
     #print len(paths)
 
-    #return rl.g 
+    #return rl.g
 
 def find_all_paths(graph, start, end):
     path  = []
@@ -298,7 +298,7 @@ def find_all_paths(graph, start, end):
             paths.append(path)
         for node in set(graph[start]).difference(path):
             queue.append((node, end, path))
-    return paths 
+    return paths
 
 if __name__ == '__main__':
     # ignore Graphviz warning messages

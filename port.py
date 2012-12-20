@@ -76,7 +76,7 @@ class Port(IntvBase):
             ov = other.val
             mn = min(sv,ov)
             mx = max(sv,ov)
-            if mx - mn == 1
+            if mx - mn == 1:
                 return [PortRange(mn,mx)]
             if other == self:
                 return [Port(self)]

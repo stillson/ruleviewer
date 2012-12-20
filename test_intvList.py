@@ -159,7 +159,7 @@ if __name__ == '__main__':
         print a , "remove ", b,
         print "---->",a.remove_(b)
 
-    if 1:
+    if 0:
         #actual targetted tests
         r1 =  pr(100,  200)
         r2 =  pr(300,  400)
@@ -211,7 +211,7 @@ if __name__ == '__main__':
         print i
 
 
-    if 0:
+    if 1:
         #actual targetted tests
         rall = pr(1,1500)
         r1 =  pr(100,  200)
@@ -228,11 +228,17 @@ if __name__ == '__main__':
 
         
         i = IntvList()
+        j = IntvList()
         i.add_(rall)
-        print i
+        j.add_(rall)
+        print
+        print i == j
+        print
+        testrem(i, r1)
         testrem(i, r1)
         testrem(i, r2)
         testrem(i, r3)
+        testrem(i, r4)
         testrem(i, r4)
         testrem(i, r5)
         testrem(i, r6)
