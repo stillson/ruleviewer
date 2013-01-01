@@ -220,18 +220,18 @@ class IntvList(collections.MutableSequence):
         if not self.list or not v in self:
             dbP(pf, 'x',str(self))
             return self
-
+        
         if len(self) == 1:
             dbP(pf, 'a')
             self.list = self.list[0] - v
             return self
-    
+        
         l = self.find_below(v)
         u = self.find_above(v)
-        #print "l:",l
-        #print "u:",u
-        #print "len:", len(self)
-
+        dbP(pf, "l: %d" % l)
+        dbP(pf, "u: %d" % u)
+        dbP(pf, "len: %d" % len(self))
+        
         if u < l:
             dbP(pf, 'c')
             if len(v) == 1:
@@ -240,15 +240,15 @@ class IntvList(collections.MutableSequence):
                 return self
             else:
                 raise UpperLowerCross("lower greater than upper")
-
+        
         if u == len(self):
             u = u - 1
-
+        
         if l == u:
             dbP(pf, 'd')
             self[l:u+1] = self[l] - v
             return self
-
+        
         if u - l == 1:
             dbP(pf, 'f')
             self[u:u+1] = self[u] - v
@@ -258,8 +258,9 @@ class IntvList(collections.MutableSequence):
             self[u:u+1] = self[u] - v
             del self[l+1,u]
             self[l:l+1] = self[l] - v
-
+        
         return self
+    
 
 if __name__ == '__main__':
     i = IntvList()
