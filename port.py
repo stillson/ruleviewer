@@ -108,7 +108,7 @@ class Port(IntvBase):
             return self.val.__cmp__(other)
     
     def split(self, port):
-        return [Port(self.val)]
+        return [self.copy()]
     
     def __contains__(self, other):
         if isSQ(other):
