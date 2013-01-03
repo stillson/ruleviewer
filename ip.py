@@ -8,7 +8,8 @@ from copy import deepcopy as dCopy
 class IpAddress(IntvBase):
     """represents a single ip address"""
     def __init__(self, arg):
-        self._addr = ipaddr.IPAddress(arg, version=4)
+        # use a sing host network
+        self._addr = ipaddr.IPNetwork(arg, version=4)
         self._arg = arg
         
     @property
@@ -26,7 +27,7 @@ class IpAddress(IntvBase):
     @property
     def val(self):
         return dCopy(self._addr)
-        
+    
     def __str__(self):
         return str(self._addr)
     
@@ -46,10 +47,12 @@ class IpAddress(IntvBase):
                 return [self.copy()]
             if abs(int(self._addr) - int(other._addr)) == 1:
                 # return a very small address range....
-                return FIXME
-            mn = min(self, other)
-            mx = max(self, other)
-            return [mn.copy(), mx.copy()]
+                args = [self._addr.network, other._addr.network]
+                args.sort()
+                return summarize_address_range(*args)
+            args = [self, other]
+            args.sort()
+            return args
         if isRQ(other):
             #double dispatch
             return other + self
@@ -103,7 +106,7 @@ class IpAddress(IntvBase):
             return self == other
         if isRQ(other):
             return self in other
-        raise InvalidInput('Must be IpAddress or IpNetwork')            
+        raise InvalidInput('Must be IpAddress or IpNetwork')
         
     def __len__(self):
         return 1
@@ -191,5 +194,12 @@ class IpNetwork(IntvBase):
         raise InvalidInput('Must be IpAddress or IpNetwork')
         
     def __sub__(self, other):
-        FIXME
-    
+        if not self.overlaps(other):
+            return [self.copy()]
+        def mapper(x):
+            return IpNetwork(str(x))
+        rv = self._net.address_exclude_ab(other._net)
+        rv_list = []
+        for i in rv:
+            rv_list.append(map(mapper, i))
+        return rv_list

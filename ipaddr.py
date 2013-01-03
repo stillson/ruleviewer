@@ -778,6 +778,86 @@ class _BaseNet(_IPAddrBase):
 
         return sorted(ret_addrs, key=_BaseNet._get_networks_key)
 
+    def address_exclude_ab(self, other):
+        """Remove an address from a larger block.
+           returns 2 lists, of addresses above and below other
+
+        For example:
+
+            addr1 = IPNetwork('10.1.1.0/24')
+            addr2 = IPNetwork('10.1.1.0/26')
+            addr1.address_exclude(addr2) =
+                [IPNetwork('10.1.1.64/26'), IPNetwork('10.1.1.128/25')]
+
+        or IPv6:
+
+            addr1 = IPNetwork('::1/32')
+            addr2 = IPNetwork('::1/128')
+            addr1.address_exclude(addr2) = [IPNetwork('::0/128'),
+                IPNetwork('::2/127'),
+                IPNetwork('::4/126'),
+                IPNetwork('::8/125'),
+                ...
+                IPNetwork('0:0:8000::/33')]
+
+        Args:
+            other: An IPvXNetwork object of the same type.
+
+        Returns:
+            A sorted list of IPvXNetwork objects addresses which is self
+            minus other.
+
+        Raises:
+            TypeError: If self and other are of difffering address
+              versions, or if other is not a network object.
+            ValueError: If other is not completely contained by self.
+
+        """
+        if not self._version == other._version:
+            raise TypeError("%s and %s are not of the same version" % (
+                str(self), str(other)))
+
+        if not isinstance(other, _BaseNet):
+            raise TypeError("%s is not a network object" % str(other))
+
+        if other not in self:
+            raise ValueError('%s not contained in %s' % (str(other),
+                                                         str(self)))
+        if other == self:
+            return []
+
+        above_addrs = []
+        below_addrs = []
+
+        # Make sure we're comparing the network of other.
+        other = IPNetwork('%s/%s' % (str(other.network), str(other.prefixlen)),
+                   version=other._version)
+
+        s1, s2 = self.subnet()
+        while s1 != other and s2 != other:
+            if other in s1:
+                above_addrs.append(s2)
+                s1, s2 = s1.subnet()
+            elif other in s2:
+                below_addrs.append(s1)
+                s1, s2 = s2.subnet()
+            else:
+                # If we got here, there's a bug somewhere.
+                assert True == False, ('Error performing exclusion: '
+                                       's1: %s s2: %s other: %s' %
+                                       (str(s1), str(s2), str(other)))
+        if s1 == other:
+            above_addrs.append(s2)
+        elif s2 == other:
+            below_addrs.append(s1)
+        else:
+            # If we got here, there's a bug somewhere.
+            assert True == False, ('Error performing exclusion: '
+                                   's1: %s s2: %s other: %s' %
+                                   (str(s1), str(s2), str(other)))
+
+        return [sorted(below_addrs, key=_BaseNet._get_networks_key),sorted(above_addrs, key=_BaseNet._get_networks_key)]
+
     def compare_networks(self, other):
         """Compare two IP objects.
 

@@ -70,7 +70,7 @@ class IntvList(collections.MutableSequence):
         return self
 
     def __getitem__(self, index):
-        return self.list[index] 
+        return self.list[index]
 
     def __str__(self):
         rstr ="["
